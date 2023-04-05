@@ -15,5 +15,11 @@
   "bugs": {
     "url": "https://github.com/kryptoklob/spearbot/issues"
   },
-  "homepage": "https://github.com/kryptoklob/spearbot#readme"
+  "homepage": "https://github.com/kryptoklob/spearbot#readme",
+  "dependencies": {
+    "ts-extras": "^0.11.0",
+    "ts-node": "^10.9.1",
+    "typechain": "^8.1.1",
+    "typescript": "^5.0.3"
+  }
 }

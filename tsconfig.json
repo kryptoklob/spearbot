@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "EsNext",
+    "module": "ESNext",
+    "strictPropertyInitialization": false,
+    "noImplicitAny": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "outDir": "dist",
+    "moduleResolution": "node16",
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "strictNullChecks": true,
+    "strict": true
+  }
+}
