@@ -50,4 +50,6 @@
     - basically regex for solidity, but with more advanced rules
  - semantic search (with AI embeddigns & cosine similarity)
     - natural language version of the above semantic search
+ - spear-audit
+    - using some or all of the above and existing tools, and also just raw gpt4-8k and gpt4-32k, runs audits of the smart contracts
  - spearbot: automatically runs any combination fo the above tools that we will create & the tools that already exist. may also help with collatting results/reports into one final report
