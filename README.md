@@ -49,7 +49,7 @@
 
 ## Potential Tools to Create
  - spear-autodoc, spear-autosum, spear-embed, etc [see spearbot-node/README.md](spearbot-node/README.md)
-    - these are primitives that can be composed with other tools to be (hopefullyA supremely useful)
+    - these are primitives that can be composed with other tools to be (hopefully) supremely useful
  - semantic search (over solidity AST)
     - basically regex for solidity, but with more advanced rules
  - semantic search (with AI embeddigns & cosine similarity)
