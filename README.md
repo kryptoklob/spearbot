@@ -2,11 +2,15 @@
 
 ## [spearbot-node](spearbot-node/README.md): node/ts scripts
 
-## vuln databases
+## Links
+### ethereum vuln databases
  - [not so smart contracts](https://github.com/crytic/not-so-smart-contracts)
  - [audit hero](https://audit-hero.com/finding)
+### ai related
+ - [openai api docs](https://platform.openai.com/docs/introduction)
+ - [langchain](https://github.com/hwchase17/langchain)
 
-### existing tools
+## Existing ETH Security Tools
  - c4udit
     - a static analyzer for solidity contracts based on regular expressions specifically crafted for Code4Rena contests."
  - slither
@@ -34,7 +38,7 @@
         - fetch remote state via rpc
         - automatically create test cases
 
-### existing services / competitors
+## Existing ETH Audit Services / Competitors
  - audit-hero / auditai
     - cosine similirity search over embeddings of exploits
  - auditware
@@ -43,7 +47,7 @@
  - MythX
     - smart contract security analysis service by consensys. comprehensive tool
 
-### potential new tools to create
+## Potential Tools to Create
  - spear-autodoc, spear-autosum, spear-embed, etc [see spearbot-node/README.md](spearbot-node/README.md)
     - these are primitives that can be composed with other tools to be (hopefullyA supremely useful)
  - semantic search (over solidity AST)
