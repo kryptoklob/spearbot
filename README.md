@@ -41,7 +41,7 @@
     - all-in-one automatic auditing solution. 
     - "We’ve combined all essential auditing tools into a single, easy-to-use platform. With features like built-in code scanning (Slither, Mythril), AI-powered vulnerability detection, and automatic report generation, you can audit like a firm for a fraction of the time and cost."
  - MythX
-    - smart contract seuciryt analysis service by consensys. comprehensive tool
+    - smart contract security analysis service by consensys. comprehensive tool
 
 ### potential new tools to create
  - spear-autodoc, spear-autosum, spear-embed, etc [see spearbot-node/README.md](spearbot-node/README.md)
