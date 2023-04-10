@@ -50,7 +50,7 @@ enum InputFormat {
 
 async function main() {
     // instantate openai
-    const model = new OpenAI({ temperature: 0, openAIApiKey: process.env.OPENAI_API_KEY } )
+    const model = new OpenAI({ temperature: 0, openAIApiKey: process.env.OPENAI_API_KEY, modelName: "gpt-4" } )
 
     // find all sol files in pwd
     const currentDirectory = process.cwd();
@@ -124,7 +124,7 @@ async function summarizeSolFile(file: string, /*summaryLevel: SummaryLevel,*/ mo
     for (const doc of splitDocs) {
         const summary = await summarizationChain.call({
             input_documents: [doc],
-            
+
         })
 
         individualSummaries.push(summary.text as string)
