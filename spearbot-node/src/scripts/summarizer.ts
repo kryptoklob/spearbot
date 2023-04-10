@@ -1,9 +1,9 @@
 import { OpenAI } from "langchain/llms";
-import { loadSummarizationChain } from "langchain/chains";
+import { loadSummarizationChain, MapReduceDocumentsChain } from "langchain/chains";
 import * as fs from "fs";
 import * as path from "path";
 import { Document } from "langchain/document";
-import { RecursiveCharacterTextSplitter, TextSplitter } from "langchain/text_splitter";
+import { RecursiveCharacterTextSplitter, TextSplitter, GenericCodeTextSplitter, TokenTextSplitter } from "langchain/text_splitter";
 
 /* gpt-4 powered summarizer
 
@@ -37,7 +37,7 @@ enum SummaryLevel {
 
 enum SplitMethod {
     RecursiveCharacter = "recursive-character",
-    Function = "function",
+    Solidity = "function",
     Tokens = "tokens"
 }
 
@@ -47,28 +47,87 @@ enum InputFormat {
     Solidity = "solidity"
 }
 
-async function summarizeFile(file: string, summaryLevel: SummaryLevel, model: OpenAI, split: SplitMethod): Promise<string> {
+async function main() {
+    // instantate openai
+    const model = new OpenAI({ temperature: 0} )
+
+    // find all sol files in pwd
+    const currentDirectory = process.cwd();
+    const targetExtension = '.sol';
+    const foundFiles = findFilesWithExtension(currentDirectory, targetExtension);
+
+    console.log(`Found ${foundFiles.length} .sol files in ${currentDirectory}:`);
+    for (const file of foundFiles) {
+      console.log(`- ${file}`);
+    }
+
+    // summarize each one
+    const summaries: string[] = [];
+
+    for (const file of foundFiles) {
+        const summary = await summarizeSolFile(file, /*SummaryLevel.Function,*/ model, SplitMethod.Solidity)
+        summaries.push(summary)
+    }
+
+    // output results as json file
+    const outputFilename = "summarization-results.json";
+    const outputPath = path.join(currentDirectory, outputFilename);
+
+    // write to file
+    fs.writeFileSync(outputPath, JSON.stringify(summaries, null, 2));
+
+    console.log(`Wrote results to ${outputPath}`);
+    console.log(`Have a nice day! :D`)
+}
+
+main()
+
+function findFilesWithExtension(directory: string, extension: string): string[] {
+    const foundFiles: string[] = [];
+    const files = fs.readdirSync(directory);
+  
+    for (const file of files) {
+      const filePath = path.join(directory, file);
+      const fileStat = fs.statSync(filePath);
+  
+      if (fileStat.isDirectory()) {
+        foundFiles.push(...findFilesWithExtension(filePath, extension));
+      } else if (fileStat.isFile() && path.extname(filePath) === extension) {
+        foundFiles.push(filePath);
+      }
+    }
+  
+    return foundFiles;
+  }
+
+async function summarizeSolFile(file: string, /*summaryLevel: SummaryLevel,*/ model: OpenAI, split: SplitMethod): Promise<string> {
     const content = fs.readFileSync(file, "utf-8");
-    const summarizationChain = loadSummarizationChain(model);
-    const summarizedContent = await summarizationChain.summarize(content, summaryLevel);
-    return summarizedContent;
+    const summarizationChain = loadSummarizationChain(model, {type: "map_reduce"}) as MapReduceDocumentsChain;
+    
+    const splitDocs = await splitContent(content, SplitMethod.Solidity)
+
+    const result = await summarizationChain.call({
+        input_documents: splitDocs
+    })
+
+    return result.res.text
 }
 
 
-async function splitDocument(content: string, format: InputFormat, split: SplitMethod): Promise<Document> {
+async function splitContent(content: string, split: SplitMethod): Promise<Document[]> {
     let splitter: TextSplitter
 
     switch (split) {
         case SplitMethod.RecursiveCharacter:
             splitter = new RecursiveCharacterTextSplitter()
             break
-        case SplitMethod.Function:
-            splitter = new 
+        case SplitMethod.Solidity:
+            splitter = new GenericCodeTextSplitter(["contract", "interface", "function", "constructor"], {chunkSize: 1, chunkOverlap: 0})
             break
         case SplitMethod.Tokens:
-
+            splitter = new TokenTextSplitter()
             break
-        
+    }
 
-
+    return splitter.createDocuments([content])
 }
