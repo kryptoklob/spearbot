@@ -3,7 +3,8 @@ import { loadSummarizationChain, MapReduceDocumentsChain } from "langchain/chain
 import * as fs from "fs";
 import * as path from "path";
 import { Document } from "langchain/document";
-import { RecursiveCharacterTextSplitter, TextSplitter, GenericCodeTextSplitter, TokenTextSplitter } from "langchain/text_splitter";
+import { RecursiveCharacterTextSplitter, TextSplitter, TokenTextSplitter } from "langchain/text_splitter";
+import { GenericCodeTextSplitter } from "../extensions/codeSplitter";
 
 /* gpt-4 powered summarizer
 
@@ -49,7 +50,7 @@ enum InputFormat {
 
 async function main() {
     // instantate openai
-    const model = new OpenAI({ temperature: 0} )
+    const model = new OpenAI({ temperature: 0, openAIApiKey: process.env.OPENAI_API_KEY } )
 
     // find all sol files in pwd
     const currentDirectory = process.cwd();
@@ -62,11 +63,13 @@ async function main() {
     }
 
     // summarize each one
-    const summaries: string[] = [];
+    const summaries: any = {}
 
     for (const file of foundFiles) {
+        console.log(`Summarizing ${file}...`)
+        const fileName = path.basename(file)
         const summary = await summarizeSolFile(file, /*SummaryLevel.Function,*/ model, SplitMethod.Solidity)
-        summaries.push(summary)
+        summaries[fileName] = summary
     }
 
     // output results as json file
@@ -100,17 +103,34 @@ function findFilesWithExtension(directory: string, extension: string): string[] 
     return foundFiles;
   }
 
-async function summarizeSolFile(file: string, /*summaryLevel: SummaryLevel,*/ model: OpenAI, split: SplitMethod): Promise<string> {
+async function summarizeSolFile(file: string, /*summaryLevel: SummaryLevel,*/ model: OpenAI, split: SplitMethod): Promise<string[]> {
     const content = fs.readFileSync(file, "utf-8");
     const summarizationChain = loadSummarizationChain(model, {type: "map_reduce"}) as MapReduceDocumentsChain;
     
     const splitDocs = await splitContent(content, SplitMethod.Solidity)
 
-    const result = await summarizationChain.call({
+    console.log(`Split ${file} into ${splitDocs.length} documents`)
+    console.log(`Summarizing @ top level first...`)
+    const topLevelSummaryResult = await summarizationChain.call({
         input_documents: splitDocs
     })
 
-    return result.res.text
+    const topLevelSummary = topLevelSummaryResult.text as string
+
+    let individualSummaries: string[] = []
+
+    console.log(`Summarizing each individual document...`)
+
+    for (const doc of splitDocs) {
+        const summary = await summarizationChain.call({
+            input_documents: [doc],
+            
+        })
+
+        individualSummaries.push(summary.text as string)
+    }
+
+    return [topLevelSummary, ...individualSummaries]
 }
 
 

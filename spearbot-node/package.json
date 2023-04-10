@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/kryptoklob/spearbot#readme",
   "dependencies": {
+    "@dqbd/tiktoken": "^1.0.4",
     "langchain": "^0.0.51",
     "ts-extras": "^0.11.0",
     "ts-node": "^10.9.1",
