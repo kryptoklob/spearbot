@@ -260,7 +260,7 @@ async function summarizeFile(filename: string, content: string, ext: InputFormat
     // chunked summaries
     for (let i=0; i<splitDocs.length; i++) {
         const chunk = splitDocs[i]
-        const title = await getTwoWordSummary(chunk.pageContent as string, model)
+        const title = await getThreeWordSummary(chunk.pageContent as string, model)
 
         console.log(`Summarizing chunk ${i+1} of ${splitDocs.length}... (${title})`)
 
@@ -292,8 +292,8 @@ async function summarizeFile(filename: string, content: string, ext: InputFormat
     return summary
 }
 
-async function getTwoWordSummary(text: string, model: OpenAI): Promise<string> {
-    const result = await model.generate([`Given the following text, generate a two word title. Remember ONLY output the two words, and literally nothing else.\n${text}\n\n`])
+async function getThreeWordSummary(text: string, model: OpenAI): Promise<string> {
+    const result = await model.generate([`Given the following text, generate a three word identifier/title. Remember ONLY output the three words, and literally nothing else.\n${text}\n\n`])
     const completion = result.generations[0][0].text
 
     return completion
