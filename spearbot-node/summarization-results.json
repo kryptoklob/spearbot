@@ -1,22 +1,5 @@
 {
-  "dai.sol": [
-    "The Dai contract is a Solidity-based smart contract that implements an ERC20 token with additional features such as authorization, EIP712 support, and permit functionality. The contract includes functions for minting and burning tokens, transferring tokens between addresses, and approving allowances for other addresses to spend tokens on behalf of the token holder. Additionally, the contract supports off-chain signing of approvals through the permit function, which allows users to approve allowances without requiring an on-chain transaction.",
-    "The given text is a part of a smart contract code written in Solidity language (version 0.5.12). It is a free software under the GNU General Public License, which allows redistribution and modification. The program does not come with any warranty and is verified on Etherscan.io on 2019-11-14.",
-    "The contract LibNote defines an event LogNote with indexed parameters (sig, usr, arg1, arg2) and data. It also includes a modifier 'note' that logs an anonymous event with constant calldata and four indexed topics: selector, caller, arg1, and arg2. The code is part of a free software program distributed under the GNU Affero General Public License.",
-    "The contract Dai, which inherits from LibNote, includes an authorization feature using a mapping of addresses to uint values called wards.",
-    "The function \"rely\" sets the authorization level of the given address \"guy\" to 1, allowing access to specific features, and requires external call and authentication.",
-    "This code snippet defines a function to deny authorization for a given address, implements an authorization modifier, and sets up ERC20 token data for a Dai Stablecoin with the symbol \"DAI\", version \"1\", 18 decimals, and tracks total supply, balances, allowances, and nonces. It also includes Approval and Transfer event declarations.",
-    "The given code defines an internal pure function \"add\" that takes two unsigned integers as input, adds them, and returns the result, ensuring that no overflow occurs.",
-    "The code defines an internal pure function named 'sub' that takes two unsigned integers as input and returns an unsigned integer. It also declares a public variable 'DOMAIN_SEPARATOR' and a public constant 'PERMIT_TYPEHASH' with a specific hash value.",
-    "This code snippet is a constructor function for a smart contract in Solidity. It sets the initial permission for the contract creator, and calculates the DOMAIN_SEPARATOR using EIP712Domain and the provided chainId, contract name, version, and address.",
-    "This code defines a \"transfer\" function in a token contract, which takes a destination address and an amount as inputs, and returns a boolean value indicating the success of transferring the specified amount from the sender's address to the destination address.",
-    "The transferFrom function checks if the source address has sufficient balance and allowance before transferring a specified amount (wad) to the destination address. It updates the balances and allowances accordingly and emits a Transfer event.",
-    "The mint function allows an authorized user to increase the balance of a specified address by a given amount, update the total supply, and emit a transfer event from a zero address to the specified address.",
-    "The \"burn\" function allows an external user to destroy a specified amount of tokens from their balance, provided they have sufficient balance and allowance. The function updates the user's balance, allowance, and the total supply, and emits a transfer event to indicate the token burn.",
-    "The \"approve\" function sets an allowance of a specific amount (wad) for a user (usr) and emits an Approval event, returning true upon successful execution.",
-    "The given code defines a function called \"push\" that takes an address and a uint as input, and transfers a specified amount (wad) from the sender to the recipient (usr) using the \"transferFrom\" function.",
-    "The function \"pull\" takes an address and an unsigned integer as input, and transfers the specified amount from the given address to the sender.",
-    "The function \"move\" takes source address, destination address, and an amount as inputs, and transfers the specified amount from the source to the destination address.",
-    "The \"permit\" function allows a token holder to approve a spender by providing a digital signature. It takes parameters such as holder, spender, nonce, expiry, allowed, and signature components (v, r, s). The function verifies the holder's address, recovers the signer's address, checks the expiry, and updates the allowance. An Approval event is emitted upon successful execution."
-  ]
+  "text": {},
+  "markdown": {},
+  "solidity": {}
 }
