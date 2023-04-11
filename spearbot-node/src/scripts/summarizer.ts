@@ -5,6 +5,7 @@ import * as path from "path";
 import { Document } from "langchain/document";
 import { MarkdownTextSplitter, RecursiveCharacterTextSplitter, TextSplitter, TokenTextSplitter } from "langchain/text_splitter";
 import { GenericCodeTextSplitter } from "../extensions/codeSplitter";
+import * as tiktoken from "@dqbd/tiktoken";
 
 /* Enums & interfaces */
 
@@ -38,9 +39,56 @@ interface SingleFileSummary {
     filename: string,
     globalSummary: string,
     chunkedSummaries: {
-        [key: string]: string
+        [key: string]: ChunkedSummary
     }
 }
+
+interface ChunkedSummary {
+    title: string,
+    summary: string,
+    content: string,
+    tokens: {
+        summary: number,
+        content: number
+    }
+}
+
+/* output format (see above interfaces)
+
+{
+    "solidity": {
+        "full/file/name/filename.sol": {
+            filename: "filename.sol",
+            globalSummary: "global summary",
+            chunkedSummaries: {
+                "1": { // line number where this chunk begins in the file
+                    title: "someFunctionName",
+                    summary: "someFunctionName summary, blah blah blah",
+                    content: "function someFunctionName(arg1, arg2) returns { implementaiton blah blah..."
+                    tokens: {
+                        summary: 10,
+                        content: 250
+                    }
+                },
+                "52": {
+                    ...
+                },
+                ...
+            }
+        },
+        "full/file/name/otherfile.sol": {
+            ...
+        }
+    },
+    "markdown": {
+        ...
+    },
+    ...
+}
+
+
+
+*/
 
 /* Usage helpers */
 
@@ -138,7 +186,7 @@ async function main() {
         process.exit(1)
     }
 
-    const model = new OpenAI({ temperature: 0, openAIApiKey: process.env.OPENAI_API_KEY, modelName: "gpt-4" } )
+    const model = new OpenAI({ temperature: 0, openAIApiKey: process.env.OPENAI_API_KEY, modelName: "gpt-4", maxTokens: 750 } )
 
     // get relevant files
     const filesByExtension: { [key: string]: string[] } = {}
@@ -207,25 +255,32 @@ async function summarizeFile(filename: string, content: string, ext: InputFormat
         input_documents: [globalDoc]
     })
 
+    const chunkedSummaries: { [key: string]: ChunkedSummary } = {}
+
     // chunked summaries
-    const chunkedSummaries: { [key: string]: string } = {}
     for (let i=0; i<splitDocs.length; i++) {
-        console.log(`Summarizing chunk ${i+1} of ${splitDocs.length}...`)
-
         const chunk = splitDocs[i]
+        const title = await getTwoWordSummary(chunk.pageContent as string, model)
 
-        const chunkSummary = await summarizationChain.call({
-            input_documents: [chunk]
-        })
+        console.log(`Summarizing chunk ${i+1} of ${splitDocs.length}... (${title})`)
 
-        // try to extract function or class name, etc from the chunk
-        // naively just use the three words of the first line that has no comments
-        // todo: for non-code, this won't work very well - maybe have gpt generate a title?
-        const chunkName = chunk.pageContent.split("\n").find(
-            line => !(line.trim().startsWith("//")||line.trim().startsWith("/*")))?.split(" ").slice(0, 3).join(" ") 
-                || `chunk ${i+1}`
-        
-        chunkedSummaries[chunkName] = chunkSummary.text as string
+        const chunkSummaryResult = await model.generate([`Give a detailed and technical summary of the following content:\n${chunk.pageContent}\n`])
+        const chunkSummary = chunkSummaryResult.generations[0][0].text
+
+        const summaryTokens = await getTokenCount(chunkSummary)
+        const contentTokens = await getTokenCount(chunk.pageContent)
+
+        const chunkedSummary: ChunkedSummary = {
+            title: title,
+            summary: chunkSummary,
+            content: chunk.pageContent,
+            tokens: {
+                summary: summaryTokens,
+                content: contentTokens
+            }
+        }
+
+        chunkedSummaries[title] = chunkedSummary
     }
 
     summary = {
@@ -237,7 +292,19 @@ async function summarizeFile(filename: string, content: string, ext: InputFormat
     return summary
 }
 
+async function getTwoWordSummary(text: string, model: OpenAI): Promise<string> {
+    const result = await model.generate([`Given the following text, generate a two word title. Remember ONLY output the two words, and literally nothing else.\n${text}\n\n`])
+    const completion = result.generations[0][0].text
+
+    return completion
+}
+
 /* Utility functions */
+async function getTokenCount(text: string): Promise<number> {
+    const enc = tiktoken.get_encoding('cl100k_base')
+    return enc.encode_ordinary(text).length
+}
+
 function outputSummaries(summaries: Summaries, out: string, format: OutputFormat) {
     switch (format) {
         case OutputFormat.Json:
