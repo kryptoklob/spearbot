@@ -218,9 +218,13 @@ async function summarizeFile(filename: string, content: string, ext: InputFormat
             input_documents: [chunk]
         })
 
-        // try to extrac function or class name, etc from the chunk
-        // naively just use the three words of the first line
-        const chunkName = chunk.pageContent.split("\n")[0].split(" ").slice(0, 3).join(" ")
+        // try to extract function or class name, etc from the chunk
+        // naively just use the three words of the first line that has no comments
+        // todo: for non-code, this won't work very well - maybe have gpt generate a title?
+        const chunkName = chunk.pageContent.split("\n").find(
+            line => !(line.trim().startsWith("//")||line.trim().startsWith("/*")))?.split(" ").slice(0, 3).join(" ") 
+                || `chunk ${i+1}`
+        
         chunkedSummaries[chunkName] = chunkSummary.text as string
     }
 
