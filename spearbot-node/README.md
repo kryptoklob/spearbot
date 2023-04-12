@@ -15,3 +15,6 @@
 - doc - generates documentation of code. optionally uses existing documentation to assist. can output in various forms (html, markdown, plaintext)
 - sum - generates hierarchical summaries of code (ie at line, function, class, and file levels). can output in various forms (html, markdown, plaintext)
 - emb - generates embeddings of code at various chunking levels (ie at line, function, class, and file levels if possible (class & file levesl likely only possible with gpt4-32k))
+
+### TODO / Improvements:
+- [ ] create hierarchical embeddings so that we can use a higher number for k-nearest-neighbor search

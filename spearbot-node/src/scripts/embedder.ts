@@ -1,7 +1,5 @@
 import { OpenAIEmbeddings } from "langchain/embeddings"
 import { HNSWLib } from "langchain/vectorstores";
-import { PineconeStore } from "langchain/vectorstores";
-import { PineconeClient } from "@pinecone-database/pinecone";
 import * as fs from "fs";
 import { SingleFileSummary, Summaries } from "../types/types";
 import { OpenAIChat } from "langchain/llms";
@@ -45,7 +43,7 @@ function printUsage(exit: boolean = false): void {
     --in <path> - path to input file (default: none)
     --fmt <json|text> - input format (default: json)
     --out <pinecone|hnsw|both> - output format (default: hnsw)
-    --outfdir <path> - path to output directory, only for hnsw (default: './embeddings')`)
+    --outfdir <path> - path to output directory, only for hnsw (default: './vecstore/embeddings')`)
    
     if (exit) {
         process.exit(1)
@@ -58,7 +56,7 @@ function parseArgs(args: string[]): ProgOpts {
         in: "",
         fmt: InputFormat.Json,
         out: OutputFormat.HNSWIndex,
-        outfile: `${process.cwd()}/embeddings`
+        outfile: `${process.cwd()}/spearbot-node/vecstore/embeddings`
     }
 
     if (args.includes("--help")) {

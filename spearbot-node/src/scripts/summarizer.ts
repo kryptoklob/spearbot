@@ -3,7 +3,7 @@ import * as fs from "fs";
 import { loadSummarizationChain, MapReduceDocumentsChain } from "langchain/chains";
 import { Document } from "langchain/document";
 import { OpenAI } from "langchain/llms";
-import { MarkdownTextSplitter, RecursiveCharacterTextSplitter, TextSplitter } from "langchain/text_splitter";
+import { MarkdownTextSplitter, RecursiveCharacterTextSplitter, TextSplitter, TokenTextSplitter } from "langchain/text_splitter";
 import * as path from "path";
 import { GenericCodeTextSplitter } from "../extensions/codeSplitter";
 import { ChunkedSummary, SingleFileSummary, Summaries, SummarySetByExtension } from "../types/types";
@@ -190,36 +190,39 @@ async function summarizeFile(filename: string, content: string, ext: InputFormat
 
     // top level summary
     console.log(`Summarizing entire file...`)
+
+    let globalDocs = [globalDoc]
+    const tokenCount = await model.getNumTokens(globalDoc.pageContent)
+    
+    if (tokenCount > 3000) {
+        console.log(`File ${filename} is too large to summarize in one go (${tokenCount} tokens). Breaking it up...`)
+
+        const tokenSplitter = new TokenTextSplitter({chunkSize: 1500})
+        globalDocs = await tokenSplitter.splitDocuments(globalDocs)
+    }
+
     const globalSummary = await summarizationChain.call({
-        input_documents: [globalDoc]
+        input_documents: globalDocs
+        
     })
 
     const chunkedSummaries: { [key: string]: ChunkedSummary } = {}
 
     // chunked summaries
+    const promises: Promise<ChunkedSummary>[] = []
+
+    console.log(`Summarizing ${splitDocs.length} chunks...`)
     for (let i=0; i<splitDocs.length; i++) {
         const chunk = splitDocs[i]
-        const title = await getThreeWordSummary(chunk.pageContent as string, model)
+        const chunkedSummary = getChunkSummary(chunk, model)
+        promises.push(chunkedSummary)
+    }
 
-        console.log(`Summarizing chunk ${i+1} of ${splitDocs.length}... (${title})`)
+    await Promise.all(promises)
 
-        const chunkSummaryResult = await model.generate([`Give a detailed and technical summary of the following content:\n${chunk.pageContent}\n`])
-        const chunkSummary = chunkSummaryResult.generations[0][0].text
-
-        const summaryTokens = await getTokenCount(chunkSummary)
-        const contentTokens = await getTokenCount(chunk.pageContent)
-
-        const chunkedSummary: ChunkedSummary = {
-            title: title,
-            summary: chunkSummary,
-            content: chunk.pageContent,
-            tokens: {
-                summary: summaryTokens,
-                content: contentTokens
-            }
-        }
-
-        chunkedSummaries[title] = chunkedSummary
+    for (let chunkSummary of promises) {
+        const awaitedSummary = await chunkSummary
+        chunkedSummaries[awaitedSummary.title] = awaitedSummary
     }
 
     summary = {
@@ -229,6 +232,28 @@ async function summarizeFile(filename: string, content: string, ext: InputFormat
     }
     
     return summary
+}
+
+async function getChunkSummary(chunk: Document, model: OpenAI): Promise<ChunkedSummary> {
+    const title = await getThreeWordSummary(chunk.pageContent as string, model)
+
+    const chunkSummaryResult = await model.generate([`Give a detailed and technical summary of the following content:\n${chunk.pageContent}\n`])
+    const chunkSummary = chunkSummaryResult.generations[0][0].text
+
+    const summaryTokens = await getTokenCount(chunkSummary)
+    const contentTokens = await getTokenCount(chunk.pageContent)
+
+    const chunkedSummary: ChunkedSummary = {
+        title: title,
+        summary: chunkSummary,
+        content: chunk.pageContent,
+        tokens: {
+            summary: summaryTokens,
+            content: contentTokens
+        }
+    }
+
+    return chunkedSummary
 }
 
 async function getThreeWordSummary(text: string, model: OpenAI): Promise<string> {
