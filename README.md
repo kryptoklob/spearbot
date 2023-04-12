@@ -2,6 +2,10 @@
 
 ## Prerequisites
 
+This assumes you're on a Unix system.
+
+If on Windows...why?
+
 First, make sure you are using node v18. I recommend using [nvm](https://github.com/nvm-sh/nvm) for Node & npm version management.
 
 ```
