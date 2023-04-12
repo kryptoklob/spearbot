@@ -4,7 +4,7 @@
  - the below script primitives, while useful on their own, are primarily useful when composed with each other and other tools to create fully functional, ai powered tools. for example, the first tool is:
 
 ### spearbit-analyzer (chatbot)
- - what is this: it's a chatbot that has access to the outputs of the above primitives
+ - what is this: it's a chatbot that has access to the outputs of the below primitives
  - what can it do: answer questions about the codebase it was fed
     - "find me all public functions in solidity"
     - "what does the documentation say about (some function)?
