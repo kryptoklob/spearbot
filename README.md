@@ -30,9 +30,7 @@ You *must* have access to the GPT-4 model to use this tool.
 export OPENAI_API_KEY=<your-api-key-here>
 ```
 
-# Usage
-
-1) Put the files to be audited (supports markdown and solidity) in `./spearbot-node/put_files_to_audit_here`
+1) Put the files to be audited (supports markdown and solidity) in `./spearbot-node/put_files_to_audit_here`.
 
     > Note: Data ingestion via codebase url (ie github codearena link for the contest) will be coming soon.
 
