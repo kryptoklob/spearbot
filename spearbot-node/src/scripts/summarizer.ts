@@ -1,11 +1,12 @@
-import { OpenAI } from "langchain/llms";
-import { loadSummarizationChain, MapReduceDocumentsChain } from "langchain/chains";
-import * as fs from "fs";
-import * as path from "path";
-import { Document } from "langchain/document";
-import { MarkdownTextSplitter, RecursiveCharacterTextSplitter, TextSplitter, TokenTextSplitter } from "langchain/text_splitter";
-import { GenericCodeTextSplitter } from "../extensions/codeSplitter";
 import * as tiktoken from "@dqbd/tiktoken";
+import * as fs from "fs";
+import { loadSummarizationChain, MapReduceDocumentsChain } from "langchain/chains";
+import { Document } from "langchain/document";
+import { OpenAI } from "langchain/llms";
+import { MarkdownTextSplitter, RecursiveCharacterTextSplitter, TextSplitter } from "langchain/text_splitter";
+import * as path from "path";
+import { GenericCodeTextSplitter } from "../extensions/codeSplitter";
+import { ChunkedSummary, SingleFileSummary, Summaries, SummarySetByExtension } from "../types/types";
 
 /* Enums & interfaces */
 
@@ -27,72 +28,10 @@ interface ProgOpts {
     out: string
     format: OutputFormat
 }
-interface Summaries {
-    [key: string]: SummarySetByExtension
-}
-
-interface SummarySetByExtension {
-    [key: string]: SingleFileSummary
-}
-
-interface SingleFileSummary {
-    filename: string,
-    globalSummary: string,
-    chunkedSummaries: {
-        [key: string]: ChunkedSummary
-    }
-}
-
-interface ChunkedSummary {
-    title: string,
-    summary: string,
-    content: string,
-    tokens: {
-        summary: number,
-        content: number
-    }
-}
-
-/* output format (see above interfaces)
-
-{
-    "solidity": {
-        "full/file/name/filename.sol": {
-            filename: "filename.sol",
-            globalSummary: "global summary",
-            chunkedSummaries: {
-                "1": { // line number where this chunk begins in the file
-                    title: "someFunctionName",
-                    summary: "someFunctionName summary, blah blah blah",
-                    content: "function someFunctionName(arg1, arg2) returns { implementaiton blah blah..."
-                    tokens: {
-                        summary: 10,
-                        content: 250
-                    }
-                },
-                "52": {
-                    ...
-                },
-                ...
-            }
-        },
-        "full/file/name/otherfile.sol": {
-            ...
-        }
-    },
-    "markdown": {
-        ...
-    },
-    ...
-}
-
-
-
-*/
 
 /* Usage helpers */
 
-function printUsage(exit: boolean = false) {
+function printUsage(exit: boolean = false): void {
     console.log(`\n
     spear-sum
     
@@ -103,7 +42,7 @@ function printUsage(exit: boolean = false) {
    
     usage:
    
-    ./summarize.sh --dir <path> --out <path> --format <format>
+    ./summarize.sh --dir <path> --out <path> --exts [text,md,solidity] --format <format>
    
     args:
    

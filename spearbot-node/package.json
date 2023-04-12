@@ -18,6 +18,9 @@
   "homepage": "https://github.com/kryptoklob/spearbot#readme",
   "dependencies": {
     "@dqbd/tiktoken": "^1.0.4",
+    "@pinecone-database/pinecone": "^0.0.10",
+    "dotenv": "^16.0.3",
+    "hnswlib-node": "^1.4.2",
     "langchain": "^0.0.51",
     "ts-extras": "^0.11.0",
     "ts-node": "^10.9.1",
