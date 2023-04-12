@@ -264,7 +264,7 @@ async function summarizeFile(filename: string, content: string, ext: InputFormat
     }
 
     for (let chunkSummary of resolvedChunks) {
-        const awaitedSummary = await chunkSummary
+        const awaitedSummary = chunkSummary
         chunkedSummaries[awaitedSummary.title] = awaitedSummary
     }
 
