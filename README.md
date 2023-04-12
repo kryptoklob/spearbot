@@ -36,6 +36,8 @@ export OPENAI_API_KEY=<your-api-key-here>
     ./summarize.sh --dir spearbot-node/put_files_to_audit_here
     ```
 
+    > Note: coming shortly will be a tool that will automatically generate markdown documentation of the entire codebase using the output from this step.
+
 3) Run the embedder. This will create a vector database of the summarized code & the code itself. Outputs by default to `spearbot-node/vectore/embeddings/`
 
     ```
