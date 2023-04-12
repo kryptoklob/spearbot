@@ -159,11 +159,38 @@ async function main() {
 
     // output and we're done
     outputSummaries(summaries, options.out, options.format)
+
+    // write markdown to file
+    fs.writeFileSync("summarization-results.md", generateMarkdown(summaries))
 }
 
 main()
 
 /* Heavy lifting happens here */
+
+function generateMarkdown(summaries: Summaries): string {
+    const solidity = summaries[InputFormat.Solidity]
+
+    let outputString = "# Solidity\n\n"
+    for (const filename in solidity) {
+        outputString += `## ${filename}\n\n`
+
+        const fileSummaryObj = solidity[filename]
+        const fileSummary = fileSummaryObj.globalSummary
+
+        outputString += `Summary: ${fileSummary}\n\n`
+
+        for (const chunkTitle in fileSummaryObj.chunkedSummaries) {
+            const chunk = fileSummaryObj.chunkedSummaries[chunkTitle]
+            const title = chunk.title
+            const summary = chunk.summary
+
+            outputString += `### ${title}\n\n${summary}\n\n`
+        }
+    }
+
+    return outputString
+}
 
 async function summarizeFiles(filenames: string[], ext: InputFormat, model: OpenAI): Promise<SummarySetByExtension> {
     const summaries: SummarySetByExtension = {}
