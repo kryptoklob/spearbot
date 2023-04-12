@@ -6,7 +6,7 @@ This assumes you're on a Unix system. (WSL is fine)
 
 If on Windows...why?
 
-First, make sure you are using node v18. I recommend using [nvm](https://github.com/nvm-sh/nvm) for Node & npm version management.
+First, make sure you are using Node v18. I recommend using [nvm](https://github.com/nvm-sh/nvm) for Node & npm version management.
 
 ```
 nvm use 18
@@ -33,6 +33,8 @@ export OPENAI_API_KEY=<your-api-key-here>
 # Usage
 
 1) Put the files to be audited (supports markdown and solidity) in `./spearbot-node/put_files_to_audit_here`
+
+    > Note: Data ingestion via codebase url (ie github codearena link for the contest) will be coming soon.
 
 2) Run the summarizer. This will generate summaries of all markdown & solidity files, and output by default to `summarization-results.json`
 
