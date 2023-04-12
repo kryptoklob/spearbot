@@ -5,6 +5,7 @@ import { PineconeClient } from "@pinecone-database/pinecone";
 import * as fs from "fs";
 import { SingleFileSummary, Summaries } from "../types/types";
 import { OpenAIChat } from "langchain/llms";
+import { Document } from "langchain/document";
 
 /* Enums & interfaces */
 
@@ -44,7 +45,7 @@ function printUsage(exit: boolean = false): void {
     --in <path> - path to input file (default: none)
     --fmt <json|text> - input format (default: json)
     --out <pinecone|hnsw|both> - output format (default: hnsw)
-    --outfile <path> - path to output file, only for hnsw (default: './embeddings.index')`)
+    --outfdir <path> - path to output directory, only for hnsw (default: './embeddings')`)
    
     if (exit) {
         process.exit(1)
@@ -57,7 +58,7 @@ function parseArgs(args: string[]): ProgOpts {
         in: "",
         fmt: InputFormat.Json,
         out: OutputFormat.HNSWIndex,
-        outfile: `${process.cwd()}/embeddings.index`
+        outfile: `${process.cwd()}/embeddings`
     }
 
     if (args.includes("--help")) {
@@ -70,7 +71,7 @@ function parseArgs(args: string[]): ProgOpts {
         const arg = args[i]
 
         switch (arg) {
-            case "-in":
+            case "--in":
                 options.in = args[++i]
                 break
             case "--fmt":
@@ -79,7 +80,7 @@ function parseArgs(args: string[]): ProgOpts {
             case "--out":
                 options.out = args[++i] as OutputFormat
                 break
-            case "--outfile":
+            case "--outdir":
                 options.outfile = args[++i] as string
                 break
             default:
@@ -133,17 +134,20 @@ async function main() {
     const input = JSON.parse(rawInput) as Summaries
 
     // input should be in *summaries* form
-    // todo when we add in text format, we'll need this logic differently
+    // todo: when we add in text format, we'll need this logic differently
 
-    
     const soliditySummaries = input["solidity"]
     const fileNames = Object.keys(soliditySummaries)
     const fileSummaries: SingleFileSummary[] = fileNames.map((fileName) => soliditySummaries[fileName])
 
     const embeds: number[][] = []
+    const docs: Document[] = []
 
     // create embeddings for each file summary
-    for (const fileSummary of fileSummaries) {
+    for (let i=0; i<fileSummaries.length; i++) {
+        console.log(`Creating embeddings for file ${i+1} of ${fileSummaries.length}...`)
+
+        const fileSummary = fileSummaries[i]
         const globalSummary  = fileSummary.globalSummary
         const chunkedSummaries = fileSummary.chunkedSummaries
         const chunkNames = Object.keys(chunkedSummaries)
@@ -158,7 +162,9 @@ async function main() {
         for (const chunkSummary of chunkSummaries) {
             const { summary, content } = chunkSummary
             const toEmbed = "File Context: " + globalShortSummary + "\n\nSection Summary: " + summary + "\n\nSection Content: " + content
+            const doc = new Document({pageContent: toEmbed})
             toEmbeds.push(toEmbed)
+            docs.push(doc)
         }
 
         // create embeddings
@@ -166,12 +172,14 @@ async function main() {
         embeds.push(...embeddingsResult)
     }
 
+    console.log(`Embeddings created.`)
+
     // embeds created
     // now save to vector store(s)
 
     if (options.out == OutputFormat.HNSWIndex || options.out == OutputFormat.Both) {
         const hnsw = new HNSWLib(embeddings, {space: "cosine"})
-        await hnsw.addVectors(embeds, [])
+        await hnsw.addVectors(embeds, docs)
         await hnsw.save(options.outfile)
         console.log(`Saved HNSW index to ${options.outfile}`)
     }
