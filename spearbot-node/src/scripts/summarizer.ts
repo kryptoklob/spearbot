@@ -236,18 +236,34 @@ async function summarizeFile(filename: string, content: string, ext: InputFormat
     const chunkedSummaries: { [key: string]: ChunkedSummary } = {}
 
     // chunked summaries
-    const promises: Promise<ChunkedSummary>[] = []
+    
+    const resolvedChunks: ChunkedSummary[] = []
 
     console.log(`Summarizing ${splitDocs.length} chunks...`)
-    for (let i=0; i<splitDocs.length; i++) {
-        const chunk = splitDocs[i]
-        const chunkedSummary = getChunkSummary(chunk, model)
-        promises.push(chunkedSummary)
+
+    const concurrency = 10
+
+    for (let i=0; i<splitDocs.length; i+=concurrency) {
+        const promises: Promise<ChunkedSummary>[] = []
+        
+        console.log(`Summarizing chunks ${i} to min(${i+concurrency}, ${splitDocs.length})...`)
+
+        for (let j=0; j<concurrency; j++) {
+            if (i+j >= splitDocs.length) {
+                break
+            }
+
+            const chunk = splitDocs[i+j]
+            const chunkedSummary = getChunkSummary(chunk, model)
+
+            promises.push(chunkedSummary)
+        }
+
+        const resolved = await Promise.all(promises)
+        resolvedChunks.push(...resolved)
     }
 
-    await Promise.all(promises)
-
-    for (let chunkSummary of promises) {
+    for (let chunkSummary of resolvedChunks) {
         const awaitedSummary = await chunkSummary
         chunkedSummaries[awaitedSummary.title] = awaitedSummary
     }
