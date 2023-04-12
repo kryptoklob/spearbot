@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-This assumes you're on a Unix system.
+This assumes you're on a Unix system. (WSL is fine)
 
 If on Windows...why?
 
