@@ -1,0 +1,3 @@
+pandoc
+pandocfilters
+# full install of LaTeX (installing individual .sty files are hard. Not a python installation) https://www.latex-project.org/get/
